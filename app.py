@@ -402,7 +402,7 @@ elif st.session_state["role"] == "student":
             st.session_state[f"stu_img_answers_{exam_id}"][i] = ans
 
     # Chỉ hiện nút Nộp nếu còn thời gian hoặc hết thời gian <= 30 giây
-    if st.button("Nộp bài", disabled=(seconds_left <= -30)):
+    if st.button("Nộp bài", disabled=(seconds_left <= -300)):
         answers = st.session_state[f"stu_img_answers_{exam_id}"]
         total_score = 0.0
         for i, q in enumerate(questions):
