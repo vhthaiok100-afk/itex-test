@@ -245,17 +245,11 @@ if st.session_state["role"] == "teacher":
                 st.info("Chưa có học sinh nào nộp bài cho đề này.")
             else:
                 st.write(f"**Tổng số học sinh đã nộp: {len(results)}**")
-                data_table = []
+                student_scores = []
                 for idx, r in enumerate(results):
-                    data_table.append({
-                        "STT": idx + 1,
-                        "Họ tên": r['name'],
-                        "Trường": r['school'],
-                        "Lớp": r['class_'],
-                        "Điểm": r['score']
-                    })
-                st.dataframe(data_table, use_container_width=True)
-
+                    diem = r['score']
+                    st.write(f"{idx+1}. {r['name']} - {r['school']} - Lớp {r['class_']} - Điểm: {diem}")
+                    student_scores.append((r['name'], diem))
                 if student_scores:
                     student_scores = sorted(student_scores, key=lambda x: -x[1])
                     names = [x[0] for x in student_scores]
