@@ -271,6 +271,56 @@ if st.session_state["role"] == "teacher":
                     plt.xticks(rotation=45, ha='right', fontsize=11)
                     plt.tight_layout()
                     st.pyplot(fig)
+                    if results and exdata:
+                        questions = exdata.get("questions", [])
+                        total_students = len(results)
+                        num_questions = len(questions)
+                        # Đếm số lượt sai cho từng câu
+                        wrong_counts = [0]*num_questions
+                        for res in results:
+                            for i, q in enumerate(questions):
+                                user_ans = res["answers"][i] if i < len(res["answers"]) else None
+                                if q.get("type") == "mcq":
+                                    if user_ans != q.get("answer"):
+                                        wrong_counts[i] += 1
+                                elif q.get("type") == "true_false":
+                                    if not (isinstance(user_ans, list) and len(user_ans)==4):
+                                        wrong_counts[i] += 1
+                                    else:
+                                        for j in range(4):
+                                            if user_ans[j] != q["answers"][j]:
+                                                wrong_counts[i] += 0.25  # mỗi ý sai tính 0.25 (tổng 1 nếu sai hết)
+                                elif q.get("type") == "short_answer":
+                                    key = str(q.get("answer","")).replace(" ","").lower()
+                                    ans = str(user_ans).replace(" ","").lower() if user_ans else ""
+                                    if not ans or ans != key:
+                                        wrong_counts[i] += 1
+
+                        # Tính tỉ lệ sai (%)
+                        wrong_rates = [count/total_students*100 for count in wrong_counts]
+
+                        # Sắp xếp giảm dần
+                        sorted_wrong = sorted(
+                            [(i+1, wrong_counts[i], wrong_rates[i]) for i in range(num_questions)],
+                            key=lambda x: -x[1]
+                        )
+
+                        st.markdown("### 🔍 Các câu hỏi bị sai nhiều nhất")
+                        st.write("STT = số thứ tự câu hỏi, Số lượt sai có thể lớn hơn số học sinh do tính từng ý cho câu Đ/S.")
+
+                        data_display = []
+                        for stt, count, rate in sorted_wrong:
+                            if count > 0:
+                                data_display.append({
+                                    "Câu số": stt,
+                                    "Số lượt sai": int(count) if count.is_integer() else round(count,2),
+                                    "Tỉ lệ sai (%)": f"{rate:.1f}%"
+                                })
+                        if data_display:
+                            st.dataframe(data_display)
+                        else:
+                            st.info("Chưa có câu hỏi nào bị sai.")
+
                 if st.button("Xóa tất cả kết quả của đề này", key="xoakq"+check_exam_id):
                     os.remove(f"results_{check_exam_id}.json")
                     st.rerun()
