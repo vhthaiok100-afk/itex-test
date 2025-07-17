@@ -1,4 +1,4 @@
 streamlit
-Pillow
+pillow
 matplotlib
-streamlit-autorefresh
+pandas
