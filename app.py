@@ -282,7 +282,7 @@ if st.session_state["role"] == "teacher":
                             for i, q in enumerate(questions):
                                 user_ans = res["answers"][i] if i < len(res["answers"]) else None
                                 if q.get("type") == "mcq":
-                                    if user_ans != q.get("answer"):
+                                    if user_ans != q["answer"]:
                                         wrong_counts[i] += 1
                                 elif q.get("type") == "true_false":
                                     if not (isinstance(user_ans, list) and len(user_ans) == 4):
@@ -292,22 +292,23 @@ if st.session_state["role"] == "teacher":
                                             if user_ans[j] != q["answers"][j]:
                                                 wrong_counts[i] += 0.25
                                 elif q.get("type") == "short_answer":
-                                    key = str(q.get("answer", "")).replace(" ", "").lower()
                                     ans = str(user_ans).replace(" ", "").lower() if user_ans else ""
+                                    key = str(q["answer"]).replace(" ", "").lower()
                                     if not ans or ans != key:
                                         wrong_counts[i] += 1
 
                         # Tính tỉ lệ sai (%)
                         wrong_rates = [count / total_students * 100 for count in wrong_counts]
 
-                        # Sắp xếp giảm dần
+                        # Danh sách đã sắp xếp giảm dần
                         sorted_wrong = sorted(
                             [(i, wrong_counts[i], wrong_rates[i]) for i in range(num_questions)],
                             key=lambda x: -x[1]
                         )
 
+                        # Hiển thị bảng thống kê
                         st.markdown("### 🔍 Các câu hỏi bị sai nhiều nhất")
-                        st.write("Số lượt sai có thể > số học sinh nếu là câu Đúng/Sai (mỗi ý sai tính 0.25).")
+                        st.write("STT = số thứ tự câu hỏi. Số lượt sai có thể lớn hơn số học sinh nếu là câu Đ/S (mỗi ý sai 0.25).")
 
                         data_display = []
                         for idx, count, rate in sorted_wrong:
@@ -321,11 +322,12 @@ if st.session_state["role"] == "teacher":
                         if data_display:
                             st.dataframe(data_display, use_container_width=True)
 
-                            st.markdown("### 🖼️ Hình ảnh các câu hỏi sai nhiều")
+                            # Hiển thị ảnh minh họa cho từng câu bị sai
+                            st.markdown("### 🖼️ Hình ảnh các câu hỏi bị sai nhiều")
                             for idx, count, rate in sorted_wrong:
                                 if count > 0:
                                     q = questions[idx]
-                                    st.markdown(f"**Câu {idx + 1}** – Số lượt sai: {round(count, 2)} – Tỉ lệ sai: {rate:.1f}%")
+                                    st.markdown(f"**Câu {idx + 1}** – Số lượt sai: {round(count,2)} – Tỉ lệ sai: {rate:.1f}%")
                                     display_image_base64(q["img_data"], caption=f"Câu {idx + 1}: {q.get('img_name', '')}", img_ratio=0.5)
                                     st.markdown("---")
                         else:
